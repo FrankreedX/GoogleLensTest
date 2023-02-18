@@ -16,6 +16,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import io.socket.client.Ack
 import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
@@ -53,7 +54,7 @@ class MainActivity : AppCompatActivity() {
 
 
         try {
-            mSocket = IO.socket("http://192.168.8.162:3001", opts)
+            mSocket = IO.socket("http://192.168.8.162:3000", opts)
         } catch (e: URISyntaxException) {
             throw RuntimeException(e)
         }
@@ -64,24 +65,26 @@ class MainActivity : AppCompatActivity() {
         mSocket.connect()
 
         // Request camera permissions
-        if (allPermissionsGranted()) {
-            startCamera()
-        } else {
-            ActivityCompat.requestPermissions(
-                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
-            )
-        }
+//        if (allPermissionsGranted()) {
+//            startCamera()
+//        } else {
+//            ActivityCompat.requestPermissions(
+//                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+//            )
+//        }
 
         // Set up the listener for take photo button
         cameraCaptureButton.setOnClickListener {
             //when picture capture button is pressed, send an echo test to socket server
             println("emitting")
-            mSocket.emit("echoTest", "from Android!")
+            mSocket.emit("echoTest", "from Android!", Ack { args ->
+                Log.d(TAG, "Ack $args")
+            })
         }
 
         outputDirectory = getOutputDirectory()
 
-        cameraExecutor = Executors.newSingleThreadExecutor()
+//        cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
     private val onConnect = Emitter.Listener {
